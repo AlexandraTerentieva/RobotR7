@@ -14,7 +14,6 @@ public class KeySlot : MonoBehaviour
         if (r != null && glowMaterial != null)
         {
             r.material = glowMaterial;
-            Debug.Log($"Слот {gameObject.name} загорелся!");
         }
     }
 }

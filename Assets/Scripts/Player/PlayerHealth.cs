@@ -38,7 +38,6 @@ public class PlayerHealth : MonoBehaviour
         if (isDead || isInvulnerable) return; // Если мертв или неуязвим — игнорируем
 
         currentHealth -= damage;
-        Debug.Log($"Игрок получил {damage} урона. Осталось: {currentHealth}");
 
         if (currentHealth <= 0)
         {
@@ -49,7 +48,6 @@ public class PlayerHealth : MonoBehaviour
     private void Die()
     {
         isDead = true;
-        Debug.Log("Игрок умер!");
 
         if (deathScreen != null) deathScreen.SetActive(true);
         if (deathText != null) deathText.text = "Вы умерли!\nПопробуйте еще раз...";

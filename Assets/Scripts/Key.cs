@@ -27,8 +27,6 @@ public class Key : MonoBehaviour
             GameManager.keysCollected++;
             GameManager.AddKeyID(keyID);
 
-            Debug.Log($"Ключей собрано: {GameManager.keysCollected} (ID: {keyID})");
-
             // Удаляем ключ со сцены
             Destroy(gameObject);
         }

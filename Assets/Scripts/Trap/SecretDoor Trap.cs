@@ -51,7 +51,6 @@ public class TrapDoor : MonoBehaviour
         if (!isOpen && distance <= openDistance && Input.GetKeyDown(KeyCode.E))
         {
             isOpen = true;
-            Debug.Log("ƒверь-ловушка открыта.");
         }
 
         // ƒвигаем дверь
@@ -69,7 +68,6 @@ public class TrapDoor : MonoBehaviour
             // »грок прошЄл дверь Ч закрываем еЄ
             isLocked = true;
             isOpen = false;
-            Debug.Log("ƒверь-ловушка закрылась! »грок заперт.");
         }
     }
 }

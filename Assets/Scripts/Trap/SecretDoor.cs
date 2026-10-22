@@ -53,8 +53,6 @@ public class SecretDoor : MonoBehaviour
             {
                 doorCollider.enabled = false;
             }
-
-            Debug.Log("Дверь открыта.");
         }
 
         // Двигаем дверь вниз

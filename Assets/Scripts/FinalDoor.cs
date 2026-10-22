@@ -1,7 +1,6 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 // Дверь: зажигает столько слотов, сколько ключей собрано
 public class FinalDoor : MonoBehaviour
@@ -39,13 +38,15 @@ public class FinalDoor : MonoBehaviour
         {
             GameManager.keysCollected = 0;
         }
-
-        Debug.Log($"Дверь забрала {slotsToActivate} ключей. Осталось у игрока: {GameManager.keysCollected}");
-
-        // Тут можно добавить открытие двери
+        // Если все ключи вставлены — показываем экран победы
         if (GameManager.keysCollected <= 0 && slotsToActivate >= GameManager.keysNeeded)
         {
-            Debug.Log("Все ключи отданы, дверь открывается!");
+            // Находим экран победы на сцене и включаем его
+            WinScreen winScreen = FindObjectOfType<WinScreen>();
+            if (winScreen != null)
+            {
+                winScreen.ShowWinScreen();
+            }
         }
     }
 }

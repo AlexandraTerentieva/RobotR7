@@ -13,7 +13,6 @@ public class Portal : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             SceneManager.LoadScene(nextSceneIndex);
-            Debug.Log($"Переход на сцену с индексом: {nextSceneIndex}");
         }
     }
 }
