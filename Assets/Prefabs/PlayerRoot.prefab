@@ -79,10 +79,10 @@ MonoBehaviour:
   jumpHeight: 1.5
   gravity: -9.81
   crouchSpeed: 0.5
-  crouchHeight: 0.2
-  normalHeight: 0.5
   cameraTransform: {fileID: 2633363699962010560}
   mouseSensitivity: 100
+  cameraDistance: 4
+  cameraHeight: 2
 --- !u!114 &410634402494983802
 MonoBehaviour:
   m_ObjectHideFlags: 0

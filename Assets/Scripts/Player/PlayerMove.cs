@@ -3,19 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// Управление игроком: ходьба, прыжок, присед (Ctrl), бег (Shift)
+// Управление от третьего лица: камера сзади, робот ходит по WASD
 public class PlayerMove : MonoBehaviour
 {
     [Header("Движение")]
     public float speed = 5f;
-    public float runSpeed = 8f;      // Скорость бега (с 4 уровня)
+    public float runSpeed = 8f;
     public float jumpHeight = 1.5f;
     public float gravity = -9.81f;
+    public float turnSpeed = 100f; // Скорость поворота робота
 
     [Header("Присед")]
     public float crouchSpeed = 2f;
-    public float crouchHeight = 1f;
-    public float normalHeight = 0.8f;
 
     [Header("Камера")]
     public Transform cameraTransform;
@@ -27,78 +26,60 @@ public class PlayerMove : MonoBehaviour
     private float xRotation = 0f;
     private bool isCrouching = false;
     private bool canRun = false;
+    private Animator anim;
 
     private void Start()
     {
         controller = GetComponent<CharacterController>();
+        anim = GetComponentInChildren<Animator>();
         Cursor.lockState = CursorLockMode.Locked;
 
-        // Проверяем уровень: бег только на 4 и 5
+        // Проверяем, на каком мы уровне (для бега)
         string currentScene = SceneManager.GetActiveScene().name;
-        if (currentScene == "Level_4" || currentScene == "Level_5")
-        {
-            canRun = true;
-        }
+        if (currentScene == "Level_4" || currentScene == "Level_5") canRun = true;
     }
 
     private void Update()
     {
-        // Поворот камеры
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+        // --- 1. КАМЕРА (только наклон вверх/вниз) ---
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
-        transform.Rotate(Vector3.up * mouseX);
-
         xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+        xRotation = Mathf.Clamp(xRotation, -10f, 50f);
         cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
 
-        // ПРИСЕД (на Left Ctrl)
-        if (Input.GetKey(KeyCode.LeftControl))
-        {
-            if (!isCrouching)
-            {
-                isCrouching = true;
-                cameraTransform.localPosition = new Vector3(0, crouchHeight, 0);
-            }
-        }
-        else
-        {
-            if (isCrouching)
-            {
-                isCrouching = false;
-                cameraTransform.localPosition = new Vector3(0, normalHeight, 0);
-            }
-        }
+        // --- 2. ПОВОРОТ РОБОТА (мышкой влево/вправо) ---
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+        transform.Rotate(Vector3.up * mouseX);
 
-        // Проверка земли
+        // --- 3. ДВИЖЕНИЕ (WASD) ---
         isGrounded = controller.isGrounded;
         if (isGrounded && velocity.y < 0) velocity.y = -2f;
 
-        // Движение
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
-        // Выбор скорости
-        float currentSpeed = speed;
-        if (isCrouching)
-        {
-            currentSpeed = crouchSpeed;
-        }
-        else if (canRun && Input.GetKey(KeyCode.LeftShift)) // БЕГ (на Left Shift)
-        {
-            currentSpeed = runSpeed;
-        }
+        // Присед на Ctrl
+        isCrouching = Input.GetKey(KeyCode.LeftControl);
+        float currentSpeed = isCrouching ? crouchSpeed : (canRun && Input.GetKey(KeyCode.LeftShift) ? runSpeed : speed);
 
+        // Двигаем робота вперед/назад (z) и вбок (x)
         Vector3 move = transform.right * x + transform.forward * z;
         controller.Move(move * currentSpeed * Time.deltaTime);
 
-        // Прыжок
+        // --- 4. АНИМАЦИИ ---
+        if (anim != null)
+        {
+            // Передаем в аниматор, движется ли робот (0 - стоит, 1 - бежит)
+            anim.SetFloat("Speed", move.magnitude);
+            anim.SetBool("Grounded", isGrounded);
+        }
+
+        // --- 5. ПРЫЖОК ---
         if (Input.GetButtonDown("Jump") && isGrounded && !isCrouching)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
 
-        // Гравитация
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
     }

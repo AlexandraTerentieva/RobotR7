@@ -1,67 +1,79 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
 
-// Здоровье игрока
+// Здоровье игрока: получение урона, смерть и рестарт
 public class PlayerHealth : MonoBehaviour
 {
-    public int maxHealth = 10;
-    public int currentHealth;
+    public int maxHealth = 10;    // Максимальное здоровье игрока
+    public int currentHealth;     // Текущее здоровье
 
     [Header("UI Смерти")]
-    public GameObject deathScreen;
-    public TextMeshProUGUI deathText;
+    public GameObject deathScreen;    // Панель "Вы умерли" (назначается в инспекторе)
+    public TextMeshProUGUI deathText; // Текст на панели
 
-    private bool isDead = false;
-    private bool isInvulnerable = false; // Неуязвимость
+    private bool isDead = false;       // Умер ли игрок (чтобы не умирал дважды)
+    private bool isInvulnerable = false; // Неуязвимость (чтобы не умереть при загрузке)
 
     private void Start()
     {
-        currentHealth = maxHealth;
-        if (deathScreen != null) deathScreen.SetActive(false);
-
-        // Включаем неуязвимость на 1 секунду при старте
-        StartCoroutine(StartInvulnerability());
+        currentHealth = maxHealth; // В начале здоровье полное
+        if (deathScreen != null) deathScreen.SetActive(false); // Прячем экран смерти
+        StartCoroutine(StartInvulnerability()); // Даем 1 секунду неуязвимости
     }
 
     private IEnumerator StartInvulnerability()
     {
         isInvulnerable = true;
-        yield return new WaitForSeconds(1f); // 1 секунда
+        yield return new WaitForSeconds(1f); // Ждем 1 секунду
         isInvulnerable = false;
     }
 
+    // Вызывается, когда игрок получает урон
     public void TakeDamage(int damage)
     {
-        if (isDead || isInvulnerable) return; // Если мертв или неуязвим — игнорируем
+        if (isDead || isInvulnerable) return; // Если уже мертв или неуязвим — игнорируем
 
-        currentHealth -= damage;
+        currentHealth -= damage; // Отнимаем здоровье
+        Debug.Log($"Игрок получил {damage} урона. Осталось: {currentHealth}");
 
-        if (currentHealth <= 0)
-        {
-            Die();
-        }
+        if (currentHealth <= 0) Die(); // Если здоровье 0 — умираем
     }
 
+    // Смерть игрока
     private void Die()
     {
         isDead = true;
+        Debug.Log("Игрок умер!");
 
+        // 1. Включаем анимацию смерти
+        Animator anim = GetComponentInChildren<Animator>();
+        if (anim != null)
+        {
+            anim.SetTrigger("Die"); // Если в аниматоре настроен триггер "Die"
+            anim.SetBool("Dead", true); // Если настроен параметр Dead
+        }
+
+        // 2. Выключаем управление, чтобы игрок не мог ходить
+        if (GetComponent<CharacterController>() != null)
+        {
+            GetComponent<CharacterController>().enabled = false;
+        }
+
+        // 3. Показываем экран смерти
         if (deathScreen != null) deathScreen.SetActive(true);
         if (deathText != null) deathText.text = "Вы умерли!\nПопробуйте еще раз...";
 
-        GetComponent<CharacterController>().enabled = false;
-
+        // 4. Ждем 2 секунды и перезапускаем
         StartCoroutine(RestartLevel());
     }
 
+    // Перезапуск уровня с откатом ключей
     private IEnumerator RestartLevel()
     {
-        yield return new WaitForSeconds(2f);
-
-        GameManager.RollbackKeys();
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        yield return new WaitForSeconds(2f); // Ждем 2 секунды
+        GameManager.RollbackKeys(); // Откатываем ключи
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); // Перезагружаем сцену
     }
 }

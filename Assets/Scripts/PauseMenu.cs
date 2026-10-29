@@ -3,62 +3,98 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// Меню паузы: останавливает игру и показывает кнопки
+// Меню паузы: останавливает игру, показывает кнопки и прячет прицел
 public class PauseMenu : MonoBehaviour
 {
-    public GameObject pausePanel; // Панель с кнопками (назначим в инспекторе)
+    public GameObject pausePanel; // Панель с кнопками паузы (назначается в инспекторе)
+    public GameObject crosshair;  // Прицел на экране (точка в центре)
 
-    private bool isPaused = false; // На паузе ли игра
+    private bool isPaused = false; // Флаг: на паузе ли игра
 
     private void Start()
     {
-        // При старте игры панель скрыта, курсор спрятан
-        pausePanel.SetActive(false);
+        // При старте игры принудительно прячем панель паузы
+        if (pausePanel != null) pausePanel.SetActive(false);
+
+        // Прячем курсор мыши в центр и блокируем его (чтобы не мешал играть)
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
     private void Update()
     {
-        // Если нажали Esc — включаем или выключаем паузу
+        // Проверяем, нажал ли игрок клавишу Esc
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (isPaused) ResumeGame();
-            else PauseGame();
+            Debug.Log("Нажата кнопка паузы!");
+
+            // Если игра на паузе — снимаем её. Если нет — ставим.
+            if (isPaused)
+            {
+                ResumeGame();
+            }
+            else
+            {
+                PauseGame();
+            }
         }
     }
 
-    // Поставить на паузу
+    // Метод для постановки игры на паузу
     public void PauseGame()
     {
         isPaused = true;
-        pausePanel.SetActive(true);      // Показываем панель
-        Time.timeScale = 0f;             // Останавливаем время в игре
-        Cursor.lockState = CursorLockMode.None; // Показываем курсор
+
+        // Включаем панель паузы
+        if (pausePanel != null) pausePanel.SetActive(true);
+
+        // Прячем прицел, чтобы он не мешал смотреть на кнопки
+        if (crosshair != null) crosshair.SetActive(false);
+
+        // Останавливаем время в игре
+        Time.timeScale = 0f;
+
+        // Показываем курсор мыши
+        Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
 
-    // Продолжить игру
+    // Метод для снятия паузы
     public void ResumeGame()
     {
         isPaused = false;
-        pausePanel.SetActive(false);     // Скрываем панель
-        Time.timeScale = 1f;             // Возвращаем время
-        Cursor.lockState = CursorLockMode.Locked; // Прячем курсор
+
+        // Выключаем панель паузы
+        if (pausePanel != null) pausePanel.SetActive(false);
+
+        // Показываем прицел обратно
+        if (crosshair != null) crosshair.SetActive(true);
+
+        // Возвращаем время в игру
+        Time.timeScale = 1f;
+
+        // Прячем курсор
+        Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
-    // Перезапустить уровень
+    // Метод для перезапуска текущего уровня
     public void RestartLevel()
     {
-        Time.timeScale = 1f; // Обязательно возвращаем время, иначе новый уровень зависнет
+        // Возвращаем время (иначе новый уровень зависнет)
+        Time.timeScale = 1f;
+
+        // Перезагружаем текущую сцену
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    // Выйти в главное меню
+    // Метод для выхода в главное меню
     public void QuitToMenu()
     {
+        // Возвращаем время
         Time.timeScale = 1f;
+
+        // Загружаем сцену главного меню
         SceneManager.LoadScene("MainMenu");
     }
 }
